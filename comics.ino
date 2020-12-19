@@ -1,8 +1,8 @@
 #include <Inkplate.h>
 #include <SdFat.h>
 
-Inkplate display(INKPLATE_3BIT);
-SdFile file;
+Inkplate display(INKPLATE_1BIT);
+SdFile config;
 
 void setup() {
     display.begin();
@@ -10,11 +10,12 @@ void setup() {
     display.clean(); // clear screen
     display.display();
 
-    display.setTextColor(0,7);
+    //display.setTextColor(0,7);
     display.setCursor(0, 5);
     display.setTextSize(2);
 
     display.println("booting...");
+    display.partialUpdate();
 
     // Init SD card. Handle if SD card could not be accessed
     if (display.sdCardInit())
@@ -24,12 +25,22 @@ void setup() {
     else
     {
         display.println("SD Card error.");
-        display.display();
+        display.partialUpdate();
         while (true) {
             // nop 
         }
     }
-    display.display();
+    display.partialUpdate();
+
+    if (!config.open("/config.toml")) {
+        display.println("Could not open config.toml.");
+        display.partialUpdate();
+        while (true) {
+            // nop
+        }
+    }
+    //display.display();
+
     delay(1000);
 
 }
