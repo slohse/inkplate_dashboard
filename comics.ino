@@ -1,8 +1,74 @@
 #include <Inkplate.h>
 #include <SdFat.h>
 
+#include "toml.h"
+
+const int ERRBUFSIZE = 30;
+
 Inkplate display(INKPLATE_1BIT);
 SdFile config;
+
+toml_table_t * cfg;
+
+
+bool read_config() {
+    if (!config.open("/config.toml")) {
+        display.println("Could not open config.toml.");
+        display.partialUpdate();
+        return false;
+    }
+
+    char * config_buf = new char[config.fileSize() + 1];
+    config_buf[config.fileSize()] = '\0';
+
+    if(!config_buf) {
+        display.println("Failed to allocate memory for config.");
+        display.partialUpdate();
+        return false;
+    }
+
+    int16_t bytes_read = config.read(config_buf, config.fileSize());
+
+    if(bytes_read <= 0) {
+        display.println("Failed to read config.");
+        display.partialUpdate();
+        return false;
+    }
+
+    char * errbuf = new char[ERRBUFSIZE];
+
+    // TODO: call toml_free at an appropriate time
+    cfg = toml_parse(config_buf, errbuf, ERRBUFSIZE);
+
+    if(!cfg) {
+        display.println("Failed to parse config.");
+        display.partialUpdate();
+        return false;
+    }
+
+    // cleanup
+    delete config_buf;
+
+    return true;
+}
+
+bool open_comics_dir() {
+    toml_table_t * table = toml_table_in(cfg, "comics");
+    if(!table) {
+        display.println("No 'comics' section in config.");
+        display.partialUpdate();
+        return false;
+    }
+
+    toml_datum_t dir = toml_string_in(table, "path");
+    if(!dir.ok) {
+        display.println("No 'path' configured for comics.");
+        display.partialUpdate();
+        return false;
+    }
+
+    return true;
+}
 
 void setup() {
     display.begin();
@@ -18,11 +84,7 @@ void setup() {
     display.partialUpdate();
 
     // Init SD card. Handle if SD card could not be accessed
-    if (display.sdCardInit())
-    {
-        display.println("SD Card OK.");
-    }
-    else
+    if (!display.sdCardInit())
     {
         display.println("SD Card error.");
         display.partialUpdate();
@@ -30,18 +92,36 @@ void setup() {
             // nop 
         }
     }
+
+    display.println("SD Card OK.");
     display.partialUpdate();
 
-    if (!config.open("/config.toml")) {
-        display.println("Could not open config.toml.");
+    if(!read_config()) {
+        display.println("read_config failed.");
         display.partialUpdate();
-        while (true) {
+        while(true) {
             // nop
         }
     }
+
+    display.println("Config OK.");
+    display.partialUpdate();
+
+    if(!open_comics_dir()) {
+        display.println("open_comics_dir failed.");
+        display.partialUpdate();
+        while(true) {
+            // nop
+        }
+    }
+
+    display.println("Comics config OK.");
+    display.partialUpdate();
+
     //display.display();
 
     delay(1000);
+
 
 }
 
