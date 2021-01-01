@@ -1,5 +1,7 @@
 #include <Inkplate.h>
 #include <SdFat.h>
+#include <string>
+#include <vector>
 
 #include "toml.h"
 
@@ -76,12 +78,48 @@ bool open_comics_dir() {
             display.partialUpdate();
             success = false;
         }
+
+        dir_contents(comics_dir);
     }
 
     free(dir.u.s);
 
     return true;
 }
+
+void dir_contents(SdFile & dir) {
+    std::vector<std::string *> contents;
+    FatFile file;
+    char buf[80];
+
+    dir.getName(buf, 80);
+
+    display.println(buf);
+    display.partialUpdate();
+
+    dir.rewind();
+
+    while(file.openNext(&dir, O_RDONLY)) {
+        file.getName(buf, 80);
+        std::string * fname = new std::string(buf);
+        contents.push_back(fname);
+        file.close();
+    }
+
+    sprintf(buf, "found %i entries in folder", contents.size());
+    display.println(buf);
+    display.partialUpdate();
+
+    for (std::vector<std::string *>::iterator it = contents.begin(); it != contents.end(); ++it) {
+        display.println((*it)->c_str());
+        display.partialUpdate();
+    }
+
+    for (std::vector<std::string *>::iterator it = contents.begin(); it != contents.end(); ++it) {
+        delete *it;
+    }
+}
+
 
 void setup() {
     display.begin();
