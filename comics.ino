@@ -3,7 +3,7 @@
 
 #include "toml.h"
 
-const int ERRBUFSIZE = 30;
+const int ERRBUFSIZE = 50;
 
 Inkplate display(INKPLATE_1BIT);
 SdFile config;
@@ -12,6 +12,8 @@ toml_table_t * cfg;
 
 
 bool read_config() {
+    char errbuf[ERRBUFSIZE];
+
     if (!config.open("/config.toml")) {
         display.println("Could not open config.toml.");
         display.partialUpdate();
@@ -35,8 +37,6 @@ bool read_config() {
         return false;
     }
 
-    char * errbuf = new char[ERRBUFSIZE];
-
     // TODO: call toml_free at an appropriate time
     cfg = toml_parse(config_buf, errbuf, ERRBUFSIZE);
 
@@ -46,13 +46,13 @@ bool read_config() {
         return false;
     }
 
-    // cleanup
-    delete config_buf;
-
     return true;
 }
 
 bool open_comics_dir() {
+    char errbuf[ERRBUFSIZE];
+    bool success = true;
+
     toml_table_t * table = toml_table_in(cfg, "comics");
     if(!table) {
         display.println("No 'comics' section in config.");
@@ -64,8 +64,21 @@ bool open_comics_dir() {
     if(!dir.ok) {
         display.println("No 'path' configured for comics.");
         display.partialUpdate();
-        return false;
+        success = false;
     }
+
+    if(success) {
+        SdFile comics_dir;
+
+        if(!comics_dir.open(dir.u.s)) {
+            sprintf(errbuf, "Could not open %s", dir.u.s);
+            display.println(errbuf);
+            display.partialUpdate();
+            success = false;
+        }
+    }
+
+    free(dir.u.s);
 
     return true;
 }
