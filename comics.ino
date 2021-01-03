@@ -3,15 +3,14 @@
 #include <string>
 #include <vector>
 
-#include "toml.h"
-
-const int ERRBUFSIZE = 50;
+#include "src/lib/toml.h"
+#include "src/shared_consts.h"
+#include "src/modules/Comics.h"
 
 Inkplate display(INKPLATE_1BIT);
 SdFile config;
 
 toml_table_t * cfg;
-
 
 bool read_config() {
     char errbuf[ERRBUFSIZE];
@@ -51,76 +50,6 @@ bool read_config() {
     return true;
 }
 
-bool open_comics_dir() {
-    char errbuf[ERRBUFSIZE];
-    bool success = true;
-
-    toml_table_t * table = toml_table_in(cfg, "comics");
-    if(!table) {
-        display.println("No 'comics' section in config.");
-        display.partialUpdate();
-        return false;
-    }
-
-    toml_datum_t dir = toml_string_in(table, "path");
-    if(!dir.ok) {
-        display.println("No 'path' configured for comics.");
-        display.partialUpdate();
-        success = false;
-    }
-
-    if(success) {
-        SdFile comics_dir;
-
-        if(!comics_dir.open(dir.u.s)) {
-            sprintf(errbuf, "Could not open %s", dir.u.s);
-            display.println(errbuf);
-            display.partialUpdate();
-            success = false;
-        }
-
-        dir_contents(comics_dir);
-    }
-
-    free(dir.u.s);
-
-    return true;
-}
-
-void dir_contents(SdFile & dir) {
-    std::vector<std::string *> contents;
-    FatFile file;
-    char buf[80];
-
-    dir.getName(buf, 80);
-
-    display.println(buf);
-    display.partialUpdate();
-
-    dir.rewind();
-
-    while(file.openNext(&dir, O_RDONLY)) {
-        file.getName(buf, 80);
-        std::string * fname = new std::string(buf);
-        contents.push_back(fname);
-        file.close();
-    }
-
-    sprintf(buf, "found %i entries in folder", contents.size());
-    display.println(buf);
-    display.partialUpdate();
-
-    for (std::vector<std::string *>::iterator it = contents.begin(); it != contents.end(); ++it) {
-        display.println((*it)->c_str());
-        display.partialUpdate();
-    }
-
-    for (std::vector<std::string *>::iterator it = contents.begin(); it != contents.end(); ++it) {
-        delete *it;
-    }
-}
-
-
 void setup() {
     display.begin();
     display.clearDisplay(); // clear buffer
@@ -158,7 +87,9 @@ void setup() {
     display.println("Config OK.");
     display.partialUpdate();
 
-    if(!open_comics_dir()) {
+    Comics cmx;
+
+    if(!cmx.setup(display, cfg)) {
         display.println("open_comics_dir failed.");
         display.partialUpdate();
         while(true) {
