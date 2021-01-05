@@ -72,12 +72,28 @@ void Comics::dir_contents(FatFile & dir) {
         file.close();
     }
 
+    m_curDirContents.sort(compare_dir_entry);
+
     sprintf(buf, "found %i entries in folder", m_curDirContents.size());
     m_display->println(buf);
     m_display->partialUpdate();
 
-    for (std::list<dir_entry>::iterator it = m_curDirContents.begin(); it != m_curDirContents.end(); ++it) {
+    for(std::list<dir_entry>::iterator it = m_curDirContents.begin(); it != m_curDirContents.end(); ++it) {
         m_display->println((*it).name.c_str());
     }
     m_display->partialUpdate();
+}
+
+/************************************************
+ * private
+ ***********************************************/
+
+bool Comics::compare_dir_entry(const dir_entry& first, const dir_entry& second) {
+    if(first.isDir && !second.isDir) {
+        return true;
+    }
+    if(second.isDir && !first.isDir) {
+        return false;
+    }
+    return first.name < second.name;
 }

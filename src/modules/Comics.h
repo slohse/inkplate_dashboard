@@ -29,6 +29,8 @@ private:
 
     FatFile m_curDir;
     std::list<dir_entry> m_curDirContents;
+
+    static bool compare_dir_entry(const dir_entry& first, const dir_entry& second);
 };
 
 
