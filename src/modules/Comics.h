@@ -5,7 +5,10 @@
 #ifndef COMICS_COMICS_H
 #define COMICS_COMICS_H
 
+#include <string>
+#include <list>
 #include <Inkplate.h>
+#include <SdFat.h>
 #include "../lib/toml.h"
 
 class Comics {
@@ -14,10 +17,18 @@ public:
     virtual ~Comics();
 
     bool setup(Inkplate & display, toml_table_t * cfg);
-    void dir_contents(SdFile & dir);
+    void dir_contents(FatFile & dir);
 
 private:
+    typedef struct {
+        bool isDir;
+        std::string name;
+    } dir_entry;
+
     Inkplate * m_display;
+
+    FatFile m_curDir;
+    std::list<dir_entry> m_curDirContents;
 };
 
 

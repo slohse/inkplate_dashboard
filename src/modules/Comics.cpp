@@ -36,7 +36,7 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
     }
 
     if(success) {
-        SdFile comics_dir;
+        FatFile comics_dir;
 
         if(!comics_dir.open(dir.u.s)) {
             sprintf(errbuf, "Could not open %s", dir.u.s);
@@ -53,35 +53,31 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
     return true;
 }
 
-void Comics::dir_contents(SdFile & dir) {
-    std::vector<std::string *> contents;
+void Comics::dir_contents(FatFile & dir) {
     FatFile file;
     char buf[80];
 
-    dir.getName(buf, 80);
+    m_curDirContents.clear();
 
-    m_display->println(buf);
-    m_display->partialUpdate();
+    dir.getName(buf, 80);
 
     dir.rewind();
 
     while(file.openNext(&dir, O_RDONLY)) {
         file.getName(buf, 80);
-        std::string * fname = new std::string(buf);
-        contents.push_back(fname);
+        dir_entry entry;
+        entry.isDir = file.isDir();
+        entry.name = std::string(buf);
+        m_curDirContents.push_back(entry);
         file.close();
     }
 
-    sprintf(buf, "found %i entries in folder", contents.size());
+    sprintf(buf, "found %i entries in folder", m_curDirContents.size());
     m_display->println(buf);
     m_display->partialUpdate();
 
-    for (std::vector<std::string *>::iterator it = contents.begin(); it != contents.end(); ++it) {
-        m_display->println((*it)->c_str());
-        m_display->partialUpdate();
+    for (std::list<dir_entry>::iterator it = m_curDirContents.begin(); it != m_curDirContents.end(); ++it) {
+        m_display->println((*it).name.c_str());
     }
-
-    for (std::vector<std::string *>::iterator it = contents.begin(); it != contents.end(); ++it) {
-        delete *it;
-    }
+    m_display->partialUpdate();
 }
