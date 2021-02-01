@@ -55,6 +55,7 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
 void Comics::next(std::string path) {
     FatFile path_obj;
     FatFile cur_dir;
+    std::string cur_dir_str(path);
     std::string cur_file("");
     char errBuf[ERRBUFSIZE];
 
@@ -67,8 +68,8 @@ void Comics::next(std::string path) {
 
         size_t last_delimiter = path.rfind('/');
         cur_file.assign(path, last_delimiter + 1, path.length() - (last_delimiter + 1));
-        std::string dir(path, 0, last_delimiter - 1);
-        cur_dir.open(dir.c_str());
+        cur_dir_str.assign(path, 0, last_delimiter - 1);
+        cur_dir.open(cur_dir_str.c_str());
     }
 
     if(path_obj.isDir()) {
@@ -81,11 +82,38 @@ void Comics::next(std::string path) {
 
     std::list<dir_entry> curDirContents = dir_contents(cur_dir);
 
-    if
-
-    for(std::list<dir_entry>::iterator it = curDirContents.begin(); it != curDirContents.end(); ++it) {
-        m_display->println((*it).name.c_str());
+    std::list<dir_entry>::iterator it = curDirContents.begin();
+    if(cur_file != "") {
+        while((*it).name != cur_file) {
+            ++it;
+        }
+        ++it;
     }
+
+    if(it != curDirContents.end()) {
+        if(!(*it).isDir) {
+            std::string next_file(cur_dir_str);
+            next_file.append("/").append((*it).name);
+
+            sprintf(errBuf, "Next file is %s", next_file.c_str());
+            m_display->println(errBuf);
+            m_display->partialUpdate();
+
+            // TODO: return
+        } else {
+            std::string next_folder(cur_dir_str);
+            next_folder.append("/").append((*it).name);
+
+            sprintf(errBuf, "Next folder is %s", next_folder.c_str());
+            m_display->println(errBuf);
+            m_display->partialUpdate();
+
+            // TODO: descend
+        }
+    } else {
+        // TODO
+    }
+
     m_display->partialUpdate();
 }
 
