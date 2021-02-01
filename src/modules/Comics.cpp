@@ -18,7 +18,7 @@ Comics::~Comics() {
 
 bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
     m_display = &display;
-    char errbuf[ERRBUFSIZE];
+    char errBuf[ERRBUFSIZE];
     bool success = true;
 
     toml_table_t * table = toml_table_in(cfg, "comics");
@@ -36,16 +36,14 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
     }
 
     if(success) {
-        FatFile comics_dir;
-
-        if(!comics_dir.open(dir.u.s)) {
-            sprintf(errbuf, "Could not open %s", dir.u.s);
-            m_display->println(errbuf);
+        if(!m_root.open(dir.u.s)) {
+            sprintf(errBuf, "Could not open %s", dir.u.s);
+            m_display->println(errBuf);
             m_display->partialUpdate();
             success = false;
         }
 
-        dir_contents(comics_dir);
+        next(std::string(dir.u.s));
     }
 
     free(dir.u.s);
@@ -53,13 +51,49 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
     return true;
 }
 
-void Comics::dir_contents(FatFile & dir) {
+
+void Comics::next(std::string path) {
+    FatFile path_obj;
+    FatFile cur_dir;
+    std::string cur_file("");
+    char errBuf[ERRBUFSIZE];
+
+    path_obj.open(path.c_str(), O_RDONLY);
+
+    if(path_obj.isFile()) {
+        sprintf(errBuf, "%s is a file", path.c_str());
+        m_display->println(errBuf);
+        m_display->partialUpdate();
+
+        size_t last_delimiter = path.rfind('/');
+        cur_file.assign(path, last_delimiter + 1, path.length() - (last_delimiter + 1));
+        std::string dir(path, 0, last_delimiter - 1);
+        cur_dir.open(dir.c_str());
+    }
+
+    if(path_obj.isDir()) {
+        sprintf(errBuf, "%s is a directory", path.c_str());
+        m_display->println(errBuf);
+        m_display->partialUpdate();
+
+        cur_dir.open(path.c_str());
+    }
+
+    std::list<dir_entry> curDirContents = dir_contents(cur_dir);
+
+    if
+
+    for(std::list<dir_entry>::iterator it = curDirContents.begin(); it != curDirContents.end(); ++it) {
+        m_display->println((*it).name.c_str());
+    }
+    m_display->partialUpdate();
+}
+
+std::list<Comics::dir_entry> Comics::dir_contents(FatFile & dir) {
     FatFile file;
     char buf[80];
 
-    m_curDirContents.clear();
-
-    dir.getName(buf, 80);
+    std::list<dir_entry> dirContents;
 
     dir.rewind();
 
@@ -68,20 +102,13 @@ void Comics::dir_contents(FatFile & dir) {
         dir_entry entry;
         entry.isDir = file.isDir();
         entry.name = std::string(buf);
-        m_curDirContents.push_back(entry);
+        dirContents.push_back(entry);
         file.close();
     }
 
-    m_curDirContents.sort(compare_dir_entry);
+    dirContents.sort(compare_dir_entry);
 
-    sprintf(buf, "found %i entries in folder", m_curDirContents.size());
-    m_display->println(buf);
-    m_display->partialUpdate();
-
-    for(std::list<dir_entry>::iterator it = m_curDirContents.begin(); it != m_curDirContents.end(); ++it) {
-        m_display->println((*it).name.c_str());
-    }
-    m_display->partialUpdate();
+    return dirContents;
 }
 
 /************************************************

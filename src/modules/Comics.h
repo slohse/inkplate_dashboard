@@ -17,7 +17,6 @@ public:
     virtual ~Comics();
 
     bool setup(Inkplate & display, toml_table_t * cfg);
-    void dir_contents(FatFile & dir);
 
 private:
     typedef struct {
@@ -27,8 +26,10 @@ private:
 
     Inkplate * m_display;
 
-    FatFile m_curDir;
-    std::list<dir_entry> m_curDirContents;
+    FatFile m_root;
+
+    std::list<dir_entry> dir_contents(FatFile & dir);
+    void next(std::string path);
 
     static bool compare_dir_entry(const dir_entry& first, const dir_entry& second);
 };
