@@ -51,6 +51,12 @@ bool read_config() {
 }
 
 void setup() {
+    Serial.begin(921600);
+    while (!Serial) {
+        ;
+    }
+    Serial.println("Serial Monitor Initialized");
+
     display.begin();
     display.clearDisplay(); // clear buffer
     display.clean(); // clear screen
@@ -61,6 +67,7 @@ void setup() {
     display.setTextSize(2);
 
     display.println("booting...");
+    Serial.println("booting...");
     display.partialUpdate();
 
     // Init SD card. Handle if SD card could not be accessed
