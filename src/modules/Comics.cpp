@@ -52,6 +52,12 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
 }
 
 
+/************************************************
+ * private
+ ***********************************************/
+
+const std::list<std::string> Comics::image_file_extensions({".jpg", ".jpeg", ".png", ".bmp"});
+
 std::string Comics::next(std::string path, bool allow_ascend) {
     FatFile path_obj;
     FatFile cur_dir;
@@ -98,8 +104,9 @@ std::string Comics::next(std::string path, bool allow_ascend) {
             sprintf(errBuf, "Next file is %s", next_file.c_str());
             m_display->println(errBuf);
             m_display->partialUpdate();
-
-            return next_file;
+            if(is_image_file(next_file)) {
+                return next_file;
+            }
         } else {
             std::string next_folder(cur_dir_str);
             next_folder.append("/").append((*it).name);
@@ -145,9 +152,18 @@ std::list<Comics::dir_entry> Comics::dir_contents(FatFile & dir) {
     return dirContents;
 }
 
-/************************************************
- * private
- ***********************************************/
+bool Comics::is_image_file(std::string file) {
+    // TODO: case insensitivity
+    for(std::list<std::string>::const_iterator it = image_file_extensions.begin();
+        it != image_file_extensions.end();
+        ++it) {
+        if(file.find((*it), file.length() - (*it).length()) != std::string::npos) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 bool Comics::compare_dir_entry(const dir_entry& first, const dir_entry& second) {
     if(first.isDir && !second.isDir) {
