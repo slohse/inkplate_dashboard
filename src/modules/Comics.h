@@ -31,7 +31,7 @@ private:
     std::list<dir_entry> dir_contents(FatFile & dir);
     std::string next(std::string path, bool allow_ascend = true);
 
-    static bool is_image_file(std::string file);
+    static bool is_image_file(std::string filepath);
     static bool compare_dir_entry(const dir_entry& first, const dir_entry& second);
 
     static const std::list<std::string> image_file_extensions;

@@ -152,12 +152,25 @@ std::list<Comics::dir_entry> Comics::dir_contents(FatFile & dir) {
     return dirContents;
 }
 
-bool Comics::is_image_file(std::string file) {
-    // TODO: case insensitivity
-    for(std::list<std::string>::const_iterator it = image_file_extensions.begin();
-        it != image_file_extensions.end();
-        ++it) {
-        if(file.find((*it), file.length() - (*it).length()) != std::string::npos) {
+bool Comics::is_image_file(std::string filepath) {
+    FatFile file;
+
+    file.open(filepath.c_str(), O_RDONLY);
+
+    uint8_t header[8];
+
+    if(file.read(header, 8) == 8) {
+        if(header[0] == 0x42 && header[1] == 0x4d) {
+            // BMP
+            return true;
+        }
+        if(header[0] == 0xff && header[1] == 0xd8 && header[2] == 0xff) {
+            // JPEG
+            return true;
+        }
+        if(header[0] == 0x89 && header[1] == 0x50 && header[2] == 0x4e && header[3] == 0x47
+           && header[4] == 0x0d && header[5] == 0x0a && header[6] == 0x1a && header[7] == 0x0a) {
+            // PNG
             return true;
         }
     }
