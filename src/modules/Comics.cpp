@@ -52,7 +52,7 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
 }
 
 
-void Comics::next(std::string path) {
+std::string Comics::next(std::string path, bool allow_ascend) {
     FatFile path_obj;
     FatFile cur_dir;
     std::string cur_dir_str(path);
@@ -90,7 +90,7 @@ void Comics::next(std::string path) {
         ++it;
     }
 
-    if(it != curDirContents.end()) {
+    while(it != curDirContents.end()) {
         if(!(*it).isDir) {
             std::string next_file(cur_dir_str);
             next_file.append("/").append((*it).name);
@@ -99,7 +99,7 @@ void Comics::next(std::string path) {
             m_display->println(errBuf);
             m_display->partialUpdate();
 
-            // TODO: return
+            return next_file;
         } else {
             std::string next_folder(cur_dir_str);
             next_folder.append("/").append((*it).name);
@@ -108,13 +108,19 @@ void Comics::next(std::string path) {
             m_display->println(errBuf);
             m_display->partialUpdate();
 
-            // TODO: descend
+            std::string subfolder_file = next(next_folder, false);
+            if(subfolder_file != "") {
+                return subfolder_file;
+            }
         }
-    } else {
-        // TODO
+
+        ++it;
     }
 
+    // TODO: ascend if allowed, otherwise: no file found... did we reach the end?
+
     m_display->partialUpdate();
+    return(std::string(""));
 }
 
 std::list<Comics::dir_entry> Comics::dir_contents(FatFile & dir) {
