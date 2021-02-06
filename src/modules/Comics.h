@@ -33,8 +33,6 @@ private:
 
     static bool is_image_file(std::string filepath);
     static bool compare_dir_entry(const dir_entry& first, const dir_entry& second);
-
-    static const std::list<std::string> image_file_extensions;
 };
 
 

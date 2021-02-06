@@ -56,8 +56,6 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
  * private
  ***********************************************/
 
-const std::list<std::string> Comics::image_file_extensions({".jpg", ".jpeg", ".png", ".bmp"});
-
 std::string Comics::next(std::string path, bool allow_ascend) {
     FatFile path_obj;
     FatFile cur_dir;
