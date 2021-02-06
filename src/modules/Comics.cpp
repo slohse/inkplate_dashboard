@@ -36,12 +36,15 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
     }
 
     if(success) {
-        if(!m_root.open(dir.u.s)) {
+        FatFile root;
+        if(!root.open(dir.u.s)) {
             sprintf(errBuf, "Could not open %s", dir.u.s);
             m_display->println(errBuf);
             m_display->partialUpdate();
             success = false;
         }
+
+        m_root_str = std::string(dir.u.s);
 
         next(std::string(dir.u.s));
     }
@@ -114,7 +117,7 @@ std::string Comics::next(std::string path, bool allow_ascend) {
             m_display->partialUpdate();
 
             std::string subfolder_file = next(next_folder, false);
-            if(subfolder_file != "") {
+            if(subfolder_file != next_folder) {
                 return subfolder_file;
             }
         }
@@ -122,10 +125,17 @@ std::string Comics::next(std::string path, bool allow_ascend) {
         ++it;
     }
 
-    // TODO: ascend if allowed, otherwise: no file found... did we reach the end?
+    if(allow_ascend && cur_dir_str != m_root_str) {
+        size_t parent_delimiter = cur_dir_str.rfind('/');
+        std::string parent(cur_dir_str, 0, parent_delimiter - 1);
+        std::string ascend_next = next(parent, true);
+        if(ascend_next != parent) {
+            return ascend_next;
+        }
+    }
 
     m_display->partialUpdate();
-    return(std::string(""));
+    return(path);
 }
 
 std::list<Comics::dir_entry> Comics::dir_contents(FatFile & dir) {

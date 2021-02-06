@@ -26,7 +26,7 @@ private:
 
     Inkplate * m_display;
 
-    FatFile m_root;
+    std::string m_root_str;
 
     std::list<dir_entry> dir_contents(FatFile & dir);
     std::string next(std::string path, bool allow_ascend = true);
