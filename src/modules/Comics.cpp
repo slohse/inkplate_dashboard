@@ -146,7 +146,7 @@ std::string Comics::next(std::string path, bool allow_ascend) {
 
     if(allow_ascend && cur_dir_str != m_root_str) {
         size_t parent_delimiter = cur_dir_str.rfind('/');
-        std::string parent(cur_dir_str, 0, parent_delimiter - 1);
+        std::string parent(cur_dir_str, 0, parent_delimiter);
         std::string ascend_next = next(parent, true);
         if(ascend_next != parent) {
             return ascend_next;
