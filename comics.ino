@@ -9,6 +9,7 @@
 
 Inkplate display(INKPLATE_1BIT);
 SdFile config;
+Comics cmx;
 
 toml_table_t * cfg;
 
@@ -94,8 +95,6 @@ void setup() {
     display.println("Config OK.");
     display.partialUpdate();
 
-    Comics cmx;
-
     if(!cmx.setup(display, cfg)) {
         display.println("open_comics_dir failed.");
         display.partialUpdate();
@@ -111,10 +110,24 @@ void setup() {
 
     delay(1000);
 
+    cmx.resume();
+
 
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+    if(display.readTouchpad(PAD1)) {
+        Serial.println("Left Button");
+        cmx.leftButton();
+    }
+    if(display.readTouchpad(PAD2)) {
+        Serial.println("Center Button");
+    }
+    if(display.readTouchpad(PAD3)) {
+        Serial.println("Right Button");
+        cmx.rightButton();
+    }
+
+    delay(100);
 
 }

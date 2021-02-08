@@ -43,12 +43,32 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
 
         m_root_str = std::string(dir.u.s);
 
-        next(std::string(dir.u.s));
+        m_current = next(std::string(dir.u.s));
     }
 
     free(dir.u.s);
 
     return true;
+}
+
+void Comics::resume() {
+    Serial.println("Comics::resume()");
+    m_display->selectDisplayMode(INKPLATE_3BIT);
+    m_display->clearDisplay();
+
+    m_display->drawImage(m_current.c_str(), 0, 0, 0);
+    m_display->display();
+}
+
+void Comics::leftButton() {
+    Serial.println("Comics::leftButton()");
+
+}
+
+void Comics::rightButton() {
+    Serial.println("Comics::rightButton()");
+    m_current = next(m_current);
+    resume();
 }
 
 
@@ -71,7 +91,7 @@ std::string Comics::next(std::string path, bool allow_ascend) {
 
         size_t last_delimiter = path.rfind('/');
         cur_file.assign(path, last_delimiter + 1, path.length() - (last_delimiter + 1));
-        cur_dir_str.assign(path, 0, last_delimiter - 1);
+        cur_dir_str.assign(path, 0, last_delimiter);
         cur_dir.open(cur_dir_str.c_str());
     }
 
@@ -83,6 +103,11 @@ std::string Comics::next(std::string path, bool allow_ascend) {
     }
 
     std::list<dir_entry> curDirContents = dir_contents(cur_dir);
+
+    sprintf(errBuf, "cur_dir_str: %s", cur_dir_str.c_str());
+    Serial.println(errBuf);
+    sprintf(errBuf, "cur_file: %s", cur_file.c_str());
+    Serial.println(errBuf);
 
     std::list<dir_entry>::iterator it = curDirContents.begin();
     if(cur_file != "") {

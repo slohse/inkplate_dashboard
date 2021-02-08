@@ -5,7 +5,7 @@
 #ifndef COMICS_SHARED_CONSTS_H
 #define COMICS_SHARED_CONSTS_H
 
-const int ERRBUFSIZE = 50;
+const int ERRBUFSIZE = 120;
 
 
 #endif //COMICS_SHARED_CONSTS_H

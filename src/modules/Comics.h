@@ -17,6 +17,9 @@ public:
     virtual ~Comics();
 
     bool setup(Inkplate & display, toml_table_t * cfg);
+    void resume();
+    void leftButton();
+    void rightButton();
 
 private:
     typedef struct {
@@ -27,6 +30,7 @@ private:
     Inkplate * m_display;
 
     std::string m_root_str;
+    std::string m_current;
 
     std::list<dir_entry> dir_contents(FatFile & dir);
     std::string next(std::string path, bool allow_ascend = true);
