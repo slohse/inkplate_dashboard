@@ -23,15 +23,13 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
 
     toml_table_t * table = toml_table_in(cfg, "comics");
     if(!table) {
-        m_display->println("No 'comics' section in config.");
-        m_display->partialUpdate();
+        Serial.println("No 'comics' section in config.");
         return false;
     }
 
     toml_datum_t dir = toml_string_in(table, "path");
     if(!dir.ok) {
-        m_display->println("No 'path' configured for comics.");
-        m_display->partialUpdate();
+        Serial.println("No 'path' configured for comics.");
         success = false;
     }
 
@@ -39,8 +37,7 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
         FatFile root;
         if(!root.open(dir.u.s)) {
             sprintf(errBuf, "Could not open %s", dir.u.s);
-            m_display->println(errBuf);
-            m_display->partialUpdate();
+            Serial.println(errBuf);
             success = false;
         }
 
@@ -70,8 +67,7 @@ std::string Comics::next(std::string path, bool allow_ascend) {
 
     if(path_obj.isFile()) {
         sprintf(errBuf, "%s is a file", path.c_str());
-        m_display->println(errBuf);
-        m_display->partialUpdate();
+        Serial.println(errBuf);
 
         size_t last_delimiter = path.rfind('/');
         cur_file.assign(path, last_delimiter + 1, path.length() - (last_delimiter + 1));
@@ -81,8 +77,7 @@ std::string Comics::next(std::string path, bool allow_ascend) {
 
     if(path_obj.isDir()) {
         sprintf(errBuf, "%s is a directory", path.c_str());
-        m_display->println(errBuf);
-        m_display->partialUpdate();
+        Serial.println(errBuf);
 
         cur_dir.open(path.c_str());
     }
@@ -102,9 +97,9 @@ std::string Comics::next(std::string path, bool allow_ascend) {
             std::string next_file(cur_dir_str);
             next_file.append("/").append((*it).name);
 
+
             sprintf(errBuf, "Next file is %s", next_file.c_str());
-            m_display->println(errBuf);
-            m_display->partialUpdate();
+            Serial.println(errBuf);
             if(is_image_file(next_file)) {
                 return next_file;
             }
@@ -113,8 +108,7 @@ std::string Comics::next(std::string path, bool allow_ascend) {
             next_folder.append("/").append((*it).name);
 
             sprintf(errBuf, "Next folder is %s", next_folder.c_str());
-            m_display->println(errBuf);
-            m_display->partialUpdate();
+            Serial.println(errBuf);
 
             std::string subfolder_file = next(next_folder, false);
             if(subfolder_file != next_folder) {
@@ -134,7 +128,6 @@ std::string Comics::next(std::string path, bool allow_ascend) {
         }
     }
 
-    m_display->partialUpdate();
     return(path);
 }
 
