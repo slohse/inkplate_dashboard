@@ -34,6 +34,9 @@ private:
 
     std::list<dir_entry> dir_contents(FatFile & dir);
     std::string next(std::string path, bool allow_ascend = true);
+    std::string prev(std::string path, bool allow_ascend = true);
+
+    std::string get_next(std::string path, bool allow_ascend = true, bool reverse = false);
 
     static bool is_image_file(std::string filepath);
     static bool compare_dir_entry(const dir_entry& first, const dir_entry& second);

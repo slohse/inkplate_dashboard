@@ -43,7 +43,7 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
 
         m_root_str = std::string(dir.u.s);
 
-        m_current = next(std::string(dir.u.s));
+        m_current = next(std::string(dir.u.s), false);
     }
 
     free(dir.u.s);
@@ -62,7 +62,8 @@ void Comics::resume() {
 
 void Comics::leftButton() {
     Serial.println("Comics::leftButton()");
-
+    m_current = prev(m_current);
+    resume();
 }
 
 void Comics::rightButton() {
@@ -77,6 +78,14 @@ void Comics::rightButton() {
  ***********************************************/
 
 std::string Comics::next(std::string path, bool allow_ascend) {
+    return get_next(path, allow_ascend, false);
+}
+
+std::string Comics::prev(std::string path, bool allow_ascend) {
+    return get_next(path, allow_ascend, true);
+}
+
+std::string Comics::get_next(std::string path, bool allow_ascend, bool reverse) {
     FatFile path_obj;
     FatFile cur_dir;
     std::string cur_dir_str(path);
@@ -85,8 +94,15 @@ std::string Comics::next(std::string path, bool allow_ascend) {
 
     path_obj.open(path.c_str(), O_RDONLY);
 
-    if(path_obj.isFile()) {
-        sprintf(errBuf, "%s is a file", path.c_str());
+    if(path_obj.isDir() && !allow_ascend) {
+        sprintf(errBuf, "%s is a directory and we're not ascending", path.c_str());
+        Serial.println(errBuf);
+        cur_dir.open(path.c_str());
+    } else {
+        // if ascending is allowed and we're looking at a folder, then
+        // we have just ascended from that folder - thus we *don't* want to go
+        // right back into it
+        sprintf(errBuf, "%s is a file or a folder we ascended from", path.c_str());
         Serial.println(errBuf);
 
         size_t last_delimiter = path.rfind('/');
@@ -95,14 +111,10 @@ std::string Comics::next(std::string path, bool allow_ascend) {
         cur_dir.open(cur_dir_str.c_str());
     }
 
-    if(path_obj.isDir()) {
-        sprintf(errBuf, "%s is a directory", path.c_str());
-        Serial.println(errBuf);
-
-        cur_dir.open(path.c_str());
-    }
-
     std::list<dir_entry> curDirContents = dir_contents(cur_dir);
+    if(reverse) {
+        curDirContents.reverse();
+    }
 
     sprintf(errBuf, "cur_dir_str: %s", cur_dir_str.c_str());
     Serial.println(errBuf);
@@ -122,7 +134,6 @@ std::string Comics::next(std::string path, bool allow_ascend) {
             std::string next_file(cur_dir_str);
             next_file.append("/").append((*it).name);
 
-
             sprintf(errBuf, "Next file is %s", next_file.c_str());
             Serial.println(errBuf);
             if(is_image_file(next_file)) {
@@ -135,7 +146,7 @@ std::string Comics::next(std::string path, bool allow_ascend) {
             sprintf(errBuf, "Next folder is %s", next_folder.c_str());
             Serial.println(errBuf);
 
-            std::string subfolder_file = next(next_folder, false);
+            std::string subfolder_file = get_next(next_folder, false, reverse);
             if(subfolder_file != next_folder) {
                 return subfolder_file;
             }
@@ -145,16 +156,15 @@ std::string Comics::next(std::string path, bool allow_ascend) {
     }
 
     if(allow_ascend && cur_dir_str != m_root_str) {
-        size_t parent_delimiter = cur_dir_str.rfind('/');
-        std::string parent(cur_dir_str, 0, parent_delimiter);
-        std::string ascend_next = next(parent, true);
-        if(ascend_next != parent) {
+        std::string ascend_next = get_next(cur_dir_str, true, reverse);
+        if(ascend_next != cur_dir_str) {
             return ascend_next;
         }
     }
 
     return(path);
 }
+
 
 std::list<Comics::dir_entry> Comics::dir_contents(FatFile & dir) {
     FatFile file;
