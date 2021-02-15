@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "src/util.h"
 #include "src/lib/toml.h"
 #include "src/shared_consts.h"
 #include "src/modules/Comics.h"
@@ -16,35 +17,11 @@ toml_table_t * cfg;
 bool read_config() {
     char errbuf[ERRBUFSIZE];
 
-    if (!config.open("/config.toml")) {
-        display.println("Could not open config.toml.");
-        display.partialUpdate();
-        return false;
-    }
+    std::string config_path("/config.toml");
 
-    char * config_buf = new char[config.fileSize() + 1];
-    config_buf[config.fileSize()] = '\0';
-
-    if(!config_buf) {
-        display.println("Failed to allocate memory for config.");
-        display.partialUpdate();
-        return false;
-    }
-
-    int16_t bytes_read = config.read(config_buf, config.fileSize());
-
-    if(bytes_read <= 0) {
-        display.println("Failed to read config.");
-        display.partialUpdate();
-        return false;
-    }
-
-    // TODO: call toml_free at an appropriate time
-    cfg = toml_parse(config_buf, errbuf, ERRBUFSIZE);
+    cfg = parse_toml_from_sd(config_path);
 
     if(!cfg) {
-        display.println("Failed to parse config.");
-        display.partialUpdate();
         return false;
     }
 
