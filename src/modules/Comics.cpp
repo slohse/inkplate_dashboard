@@ -136,7 +136,8 @@ std::string Comics::get_next(std::string path, bool allow_ascend, bool reverse) 
 
             sprintf(errBuf, "Next file is %s", next_file.c_str());
             Serial.println(errBuf);
-            if(is_image_file(next_file)) {
+            // for some reason neither BMP nor JPEG get rendered properly. The screen just stays blank
+            if(file_type(next_file) == FileType::PNG) {
                 return next_file;
             }
         } else {
@@ -188,7 +189,7 @@ std::list<Comics::dir_entry> Comics::dir_contents(FatFile & dir) {
     return dirContents;
 }
 
-bool Comics::is_image_file(std::string filepath) {
+Comics::FileType Comics::file_type(std::string filepath) {
     FatFile file;
 
     file.open(filepath.c_str(), O_RDONLY);
@@ -197,21 +198,18 @@ bool Comics::is_image_file(std::string filepath) {
 
     if(file.read(header, 8) == 8) {
         if(header[0] == 0x42 && header[1] == 0x4d) {
-            // BMP
-            return true;
+            return FileType::BMP;
         }
         if(header[0] == 0xff && header[1] == 0xd8 && header[2] == 0xff) {
-            // JPEG
-            return true;
+            return FileType::JPEG;
         }
         if(header[0] == 0x89 && header[1] == 0x50 && header[2] == 0x4e && header[3] == 0x47
            && header[4] == 0x0d && header[5] == 0x0a && header[6] == 0x1a && header[7] == 0x0a) {
-            // PNG
-            return true;
+            return FileType::PNG;
         }
     }
 
-    return false;
+    return FileType::NO_IMAGE;
 }
 
 bool Comics::compare_dir_entry(const dir_entry& first, const dir_entry& second) {

@@ -27,6 +27,13 @@ private:
         std::string name;
     } dir_entry;
 
+    enum class FileType {
+        NO_IMAGE,
+        BMP,
+        JPEG,
+        PNG
+    };
+
     Inkplate * m_display;
 
     std::string m_root_str;
@@ -38,7 +45,7 @@ private:
 
     std::string get_next(std::string path, bool allow_ascend = true, bool reverse = false);
 
-    static bool is_image_file(std::string filepath);
+    static FileType file_type(std::string filepath);
     static bool compare_dir_entry(const dir_entry& first, const dir_entry& second);
 };
 
