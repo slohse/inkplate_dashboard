@@ -4,9 +4,9 @@
 
 #include "Comics.h"
 #include "../shared_consts.h"
+#include "../util.h"
 #include <SdFat.h>
 #include <string>
-#include <vector>
 
 Comics::Comics() {
 
@@ -44,6 +44,13 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
         m_root_str = std::string(dir.u.s);
 
         m_current = next(std::string(dir.u.s), false);
+
+        std::string cached = get_last_viewed();
+        if(cached != "") {
+            sprintf(errBuf, "Found %s as last viewed", cached.c_str());
+            Serial.println(errBuf);
+            m_current = cached;
+        }
     }
 
     free(dir.u.s);
@@ -62,13 +69,13 @@ void Comics::resume() {
 
 void Comics::leftButton() {
     Serial.println("Comics::leftButton()");
-    m_current = prev(m_current);
+    set_current_image(prev(m_current));
     resume();
 }
 
 void Comics::rightButton() {
     Serial.println("Comics::rightButton()");
-    m_current = next(m_current);
+    set_current_image(next(m_current));
     resume();
 }
 
@@ -76,6 +83,14 @@ void Comics::rightButton() {
 /************************************************
  * private
  ***********************************************/
+
+const std::string Comics::CACHE_PATH = ".cache.toml";
+const std::string Comics::LAST_VIEWED_KEY = "last_viewed";
+
+void Comics::set_current_image(std::string const & path) {
+    m_current = path;
+    set_last_viewed(path);
+}
 
 std::string Comics::next(std::string path, bool allow_ascend) {
     return get_next(path, allow_ascend, false);
@@ -187,6 +202,51 @@ std::list<Comics::dir_entry> Comics::dir_contents(FatFile & dir) {
     dirContents.sort(compare_dir_entry);
 
     return dirContents;
+}
+
+
+std::string Comics::get_last_viewed() {
+    std::string last_viewed("");
+    char errBuf[ERRBUFSIZE];
+
+    std::string cache_path = m_root_str;
+    cache_path.append("/").append(CACHE_PATH);
+
+    toml_table_t* cache = parse_toml_from_sd(cache_path);
+
+    if(cache) {
+        Serial.println("Found cache file");
+        toml_datum_t toml_last_viewed = toml_string_in(cache, LAST_VIEWED_KEY.c_str());
+        if(toml_last_viewed.ok) {
+            sprintf(errBuf, "Found key, value: %s", toml_last_viewed.u.s);
+            Serial.println(errBuf);
+            last_viewed.assign(toml_last_viewed.u.s);
+        }
+    }
+
+    return last_viewed;
+}
+
+void Comics::set_last_viewed(std::string const & path) {
+    FatFile file;
+    char errBuf[ERRBUFSIZE];
+
+    std::string cache_path = m_root_str;
+    cache_path.append("/").append(CACHE_PATH);
+
+    if(!file.open(cache_path.c_str(), FILE_WRITE)) {
+        sprintf(errBuf, "Failed to open %s", cache_path.c_str());
+        Serial.println(errBuf);
+    }
+
+    char buf[160];
+    sprintf(buf, "%s = %s", LAST_VIEWED_KEY.c_str(), path.c_str());
+    int bytes_written = file.write(buf);
+    if(bytes_written) {
+        file.truncate(bytes_written);
+    } else {
+        Serial.println("Could not write last viewed file");
+    }
 }
 
 Comics::FileType Comics::file_type(std::string filepath) {

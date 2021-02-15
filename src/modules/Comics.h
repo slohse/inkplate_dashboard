@@ -34,16 +34,25 @@ private:
         PNG
     };
 
+    static const std::string CACHE_PATH;
+    static const std::string LAST_VIEWED_KEY;
+
     Inkplate * m_display;
 
     std::string m_root_str;
     std::string m_current;
 
-    std::list<dir_entry> dir_contents(FatFile & dir);
+    void set_current_image(std::string const & path);
+
     std::string next(std::string path, bool allow_ascend = true);
     std::string prev(std::string path, bool allow_ascend = true);
 
     std::string get_next(std::string path, bool allow_ascend = true, bool reverse = false);
+
+    std::list<dir_entry> dir_contents(FatFile & dir);
+
+    std::string get_last_viewed();
+    void set_last_viewed(std::string const & path);
 
     static FileType file_type(std::string filepath);
     static bool compare_dir_entry(const dir_entry& first, const dir_entry& second);
