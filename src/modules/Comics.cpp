@@ -237,16 +237,21 @@ void Comics::set_last_viewed(std::string const & path) {
     if(!file.open(cache_path.c_str(), FILE_WRITE)) {
         sprintf(errBuf, "Failed to open %s", cache_path.c_str());
         Serial.println(errBuf);
+        return;
     }
 
+    file.truncate(0);
     char buf[160];
     sprintf(buf, "%s = %s", LAST_VIEWED_KEY.c_str(), path.c_str());
     int bytes_written = file.write(buf);
     if(bytes_written) {
-        file.truncate(bytes_written);
+        sprintf(errBuf, "Wrote %i bytes to %s", bytes_written, cache_path.c_str());
+        Serial.println(errBuf);
     } else {
-        Serial.println("Could not write last viewed file");
+        sprintf(errBuf, "Could not write last viewed file to %s", cache_path.c_str());
+        Serial.println(errBuf);
     }
+    file.close();
 }
 
 Comics::FileType Comics::file_type(std::string filepath) {
