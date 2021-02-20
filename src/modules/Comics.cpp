@@ -242,7 +242,7 @@ void Comics::set_last_viewed(std::string const & path) {
 
     file.truncate(0);
     char buf[160];
-    sprintf(buf, "%s = %s", LAST_VIEWED_KEY.c_str(), path.c_str());
+    sprintf(buf, "%s = '%s'", LAST_VIEWED_KEY.c_str(), path.c_str());
     int bytes_written = file.write(buf);
     if(bytes_written) {
         sprintf(errBuf, "Wrote %i bytes to %s", bytes_written, cache_path.c_str());
