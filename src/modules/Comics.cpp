@@ -47,9 +47,14 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
 
         std::string cached = get_last_viewed();
         if(cached != "") {
-            sprintf(errBuf, "Found %s as last viewed", cached.c_str());
-            Serial.println(errBuf);
-            m_current = cached;
+            if(file_type(cached) == FileType::PNG) {
+                sprintf(errBuf, "Found %s as last viewed", cached.c_str());
+                Serial.println(errBuf);
+                m_current = cached;
+            } else {
+                sprintf(errBuf, "'%s' doesn't exist or is not a valid image file", cached.c_str());
+                Serial.println(errBuf);
+            }
         }
     }
 
