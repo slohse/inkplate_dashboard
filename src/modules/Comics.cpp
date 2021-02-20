@@ -89,7 +89,7 @@ void Comics::rightButton() {
  * private
  ***********************************************/
 
-const std::string Comics::CACHE_PATH = ".cache.toml";
+const std::string Comics::CACHE_PATH = ".inkplate_comics.toml";
 const std::string Comics::LAST_VIEWED_KEY = "last_viewed";
 
 void Comics::set_current_image(std::string const & path) {
