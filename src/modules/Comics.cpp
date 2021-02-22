@@ -68,7 +68,52 @@ void Comics::resume() {
     m_display->selectDisplayMode(INKPLATE_3BIT);
     m_display->clearDisplay();
 
-    m_display->drawImage(m_current.c_str(), 0, 0, 0);
+    int x_offset = 0;
+    int y_offset = 0;
+    char errBuf[ERRBUFSIZE];
+
+    // centering the image
+    if(file_type(m_current.c_str()) == FileType::PNG) {
+        Serial.println("centering");
+        reset_png_header_flag();
+        pngle_t *pngle = pngle_new();
+        pngle_set_init_callback(pngle, c_png_header_callback);
+
+        FatFile file;
+        file.open(m_current.c_str(), O_RDONLY);
+
+        sprintf(errBuf, "Feeding %s into pngle", m_current.c_str());
+        Serial.println(errBuf);
+
+        uint8_t buf[16];
+        size_t bytes_read = file.read(buf, 16);
+        while(!png_header_is_read() && bytes_read) {
+            pngle_feed(pngle, buf, bytes_read);
+            bytes_read = file.read(buf, 16);
+        }
+
+        Serial.println("header read");
+        sprintf(errBuf, "width: %i, height: %i", pngle_get_width(pngle), pngle_get_height(pngle));
+        Serial.println(errBuf);
+
+        if(png_header_is_read()) {
+            int32_t x_margin = m_display->width() - pngle_get_width(pngle);
+            if(x_margin > 0) {
+                x_offset = x_margin / 2;
+            }
+            int32_t y_margin = m_display->height() - pngle_get_height(pngle);
+            if(y_margin > 0) {
+                y_offset = y_margin / 2;
+            }
+            sprintf(errBuf, "x_margin: %i, x_offset: %i, y_margin: %i, y_offset: %i",
+                    x_margin, x_offset, y_margin, y_offset);
+            Serial.println(errBuf);
+        }
+
+        pngle_destroy(pngle);
+    }
+
+    m_display->drawImage(m_current.c_str(), x_offset, y_offset, 0);
     m_display->display();
 }
 
@@ -84,6 +129,10 @@ void Comics::rightButton() {
     resume();
 }
 
+void Comics::png_header_callback() {
+    Serial.println("Comics::png_header_callback()");
+    m_png_header_read = true;
+}
 
 /************************************************
  * private
@@ -91,6 +140,8 @@ void Comics::rightButton() {
 
 const std::string Comics::CACHE_PATH = ".inkplate_comics.toml";
 const std::string Comics::LAST_VIEWED_KEY = "last_viewed";
+
+bool Comics::m_png_header_read = false;
 
 void Comics::set_current_image(std::string const & path) {
     m_current = path;
@@ -186,7 +237,6 @@ std::string Comics::get_next(std::string path, bool allow_ascend, bool reverse) 
     return(path);
 }
 
-
 std::list<Comics::dir_entry> Comics::dir_contents(FatFile & dir) {
     FatFile file;
     char buf[80];
@@ -209,6 +259,13 @@ std::list<Comics::dir_entry> Comics::dir_contents(FatFile & dir) {
     return dirContents;
 }
 
+void Comics::reset_png_header_flag() {
+    m_png_header_read = false;
+}
+
+bool Comics::png_header_is_read() {
+    return m_png_header_read;
+}
 
 std::string Comics::get_last_viewed() {
     std::string last_viewed("");
@@ -290,4 +347,9 @@ bool Comics::compare_dir_entry(const dir_entry& first, const dir_entry& second) 
         return false;
     }
     return first.name < second.name;
+}
+
+void c_png_header_callback(pngle_t *pngle, uint32_t w, uint32_t h) {
+    Serial.println("c_png_header_callback()");
+    Comics::png_header_callback();
 }
