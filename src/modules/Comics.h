@@ -9,10 +9,10 @@
 #include <list>
 #include <Inkplate.h>
 #include <SdFat.h>
-#include "../lib/toml.h"
+#include "ViewIF.h"
 #include <libs/pngle/pngle.h>
 
-class Comics {
+class Comics : public ViewIF {
 public:
     Comics();
     virtual ~Comics();
