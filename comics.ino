@@ -37,7 +37,7 @@ void setup() {
 
     display.begin();
     display.clearDisplay(); // clear buffer
-    display.clean(); // clear screen
+    //display.clean(0, 1); // clear screen
     display.display();
 
     //display.setTextColor(0,7);
