@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "src/util.h"
+#include "src/Config.h"
 #include "src/lib/toml.h"
 #include "src/shared_consts.h"
 #include "src/modules/Comics.h"
@@ -12,16 +13,14 @@ Inkplate display(INKPLATE_1BIT);
 SdFile config;
 Comics cmx;
 
-toml_table_t * cfg;
+Config cfg;
 
 bool read_config() {
     char errbuf[ERRBUFSIZE];
 
     std::string config_path("/config.toml");
 
-    cfg = parse_toml_from_sd(config_path);
-
-    if(!cfg) {
+    if(cfg.init(config_path) != Config::Error::SUCCESS) {
         return false;
     }
 
@@ -72,13 +71,7 @@ void setup() {
     display.println("Config OK.");
     display.partialUpdate();
 
-    if(!cmx.setup(display, cfg)) {
-        display.println("open_comics_dir failed.");
-        display.partialUpdate();
-        while(true) {
-            // nop
-        }
-    }
+    // TODO: initialize modules here
 
     display.println("Comics config OK.");
     display.partialUpdate();
