@@ -5,6 +5,8 @@
 #ifndef COMICS_VIEWIF_H
 #define COMICS_VIEWIF_H
 
+#include <Inkplate.h>
+
 #include "../lib/toml.h"
 
 class ViewIF {

@@ -7,11 +7,11 @@
 #include "src/Config.h"
 #include "src/lib/toml.h"
 #include "src/shared_consts.h"
-#include "src/modules/Comics.h"
+#include "src/modules/ViewManager.h"
 
 Inkplate display(INKPLATE_1BIT);
 SdFile config;
-Comics cmx;
+ViewManager viewMan;
 
 Config cfg;
 
@@ -71,7 +71,25 @@ void setup() {
     display.println("Config OK.");
     display.partialUpdate();
 
-    // TODO: initialize modules here
+    toml_table_t * cfg_general = nullptr;
+    toml_array_t * cfg_modules = nullptr;
+    if (Config::Error::SUCCESS != cfg.get_general(&cfg_general)) {
+        display.println("Config has no 'general' section.");
+        display.partialUpdate();
+        while(true) {
+            // nop
+        }
+    }
+
+    if (Config::Error::SUCCESS != cfg.get_modules(&cfg_modules)) {
+        display.println("Config's 'general' section has no 'modules'.");
+        display.partialUpdate();
+        while(true) {
+            // nop
+        }
+    }
+
+    viewMan.init(display, cfg_general, cfg_modules);
 
     display.println("Comics config OK.");
     display.partialUpdate();
@@ -80,7 +98,7 @@ void setup() {
 
     delay(1000);
 
-    cmx.resume();
+    viewMan.draw();
 
 
 }
@@ -88,14 +106,15 @@ void setup() {
 void loop() {
     if(display.readTouchpad(PAD1)) {
         Serial.println("Left Button");
-        cmx.leftButton();
+        viewMan.leftButton();
     }
     if(display.readTouchpad(PAD2)) {
         Serial.println("Center Button");
+        viewMan.centerButton();
     }
     if(display.readTouchpad(PAD3)) {
         Serial.println("Right Button");
-        cmx.rightButton();
+        viewMan.rightButton();
     }
 
     delay(100);
