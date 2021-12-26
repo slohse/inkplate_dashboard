@@ -21,13 +21,7 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
     char errBuf[ERRBUFSIZE];
     bool success = true;
 
-    toml_table_t * table = toml_table_in(cfg, "comics");
-    if(!table) {
-        Serial.println("No 'comics' section in config.");
-        return false;
-    }
-
-    toml_datum_t dir = toml_string_in(table, "path");
+    toml_datum_t dir = toml_string_in(cfg, "path");
     if(!dir.ok) {
         Serial.println("No 'path' configured for comics.");
         success = false;

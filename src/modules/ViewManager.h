@@ -29,7 +29,7 @@ private:
     Inkplate * m_display;
 
     void initModules(toml_table_t * cfg, toml_array_t * modules_cfg);
-    ViewIF * viewBuilder(char * viewType, toml_table_t * cfg);
+    ViewIF * viewBuilder(toml_table_t * cfg);
 };
 
 

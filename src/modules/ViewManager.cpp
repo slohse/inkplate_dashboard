@@ -81,48 +81,37 @@ void ViewManager::initModules(toml_table_t * cfg, toml_array_t * modules_cfg) {
         toml_table_t * module = toml_table_at(modules_cfg, i);
         if (!module) break;
 
-        toml_table_t * mod_cfg = nullptr;
-        toml_datum_t type = toml_string_in(module, "module");
-        if (!type.ok) {
-            sprintf(errBuf, "Module %i has no type.", i);
-            Serial.println(errBuf);
-            continue;
-        }
-
-        toml_datum_t name = toml_string_in(module, "name");
-        if (!name.ok) {
-            sprintf(errBuf, "Module %i of type '%s' has no name/config.", i, type.u.s);
-            Serial.println(errBuf);
-        } else {
-            mod_cfg = toml_table_in(cfg, name.u.s);
-        }
-
-        ViewIF * view = viewBuilder(type.u.s, mod_cfg);
+        ViewIF * view = viewBuilder(module);
         if (view) {
             m_ring.pushBack(view);
         }
-
-        free(type.u.s);
-        free(name.u.s);
     }
 }
 
 
-ViewIF * ViewManager::viewBuilder(char * viewType, toml_table_t * cfg) {
+ViewIF * ViewManager::viewBuilder(toml_table_t * mod_cfg) {
     char errBuf[ERRBUFSIZE];
 
+    toml_datum_t type = toml_string_in(mod_cfg, "module");
+    if (!type.ok) {
+        Serial.println("Module has no type.");
+        return nullptr;
+    }
+
     ViewIF * newView = nullptr;
-    if (strcmp("comics", viewType)) {
-        if (!cfg) {
-            Serial.println("Comics module needs a config");
-        }
+    if (strcmp("comics", type.u.s) == 0) {
         Comics * comics = new Comics();
-        comics->setup(*m_display, cfg);
-        newView = (ViewIF *) comics;
+        if (comics->setup(*m_display, mod_cfg)) {
+            newView = (ViewIF *) comics;
+        } else {
+            sprintf(errBuf, "Could not set up comics module.");
+        }
     } else {
-        sprintf(errBuf, "Unknown module type '%s'.", viewType);
+        sprintf(errBuf, "Unknown module type '%s'.", type.u.s);
         Serial.println(errBuf);
     }
+
+    free(type.u.s);
 
     return newView;
 }
