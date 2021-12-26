@@ -34,11 +34,15 @@ void ViewManager::leftButton() {
 }
 
 void ViewManager::centerButton() {
+    char errBuf[ERRBUFSIZE];
+
     ViewIF * curr = m_ring.getNext();
     if (!curr) {
         Serial.println("ViewManager::centerButton> no current view");
         return;
     }
+    sprintf(errBuf, "Resuming %p.", (void *) curr);
+    Serial.println(errBuf);
     curr->resume();
 }
 
@@ -93,6 +97,10 @@ void ViewManager::initModules(toml_table_t * cfg, toml_array_t * modules_cfg) {
         Serial.println(errBuf);
 #endif
         if (view) {
+#ifdef VERBOSE
+            sprintf(errBuf, "Adding view %p to the ring.", (void *) view);
+            Serial.println(errBuf);
+#endif
             m_ring.pushBack(view);
         }
     }

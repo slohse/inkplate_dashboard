@@ -60,6 +60,7 @@ ViewIF * ViewRing::getNext() {
 
 ViewRing::Item::Item(ViewIF * content) {
     m_content = content;
+    m_next = nullptr;
 }
 
 ViewRing::Item::Item(ViewIF * content, Item * next) {
