@@ -7,6 +7,8 @@
 #include "Comics.h"
 #include "../shared_consts.h"
 
+#define VERBOSE
+
 ViewManager::ViewManager() : m_ring(), m_display(nullptr) {
 
 }
@@ -78,10 +80,18 @@ void ViewManager::initModules(toml_table_t * cfg, toml_array_t * modules_cfg) {
     }
 
     for (int i = 0; ; i++) {
+#ifdef VERBOSE
+        sprintf(errBuf, "Looking at module at index %i.", i);
+        Serial.println(errBuf);
+#endif
         toml_table_t * module = toml_table_at(modules_cfg, i);
         if (!module) break;
 
         ViewIF * view = viewBuilder(module);
+#ifdef VERBOSE
+        sprintf(errBuf, "New view at %p.", (void *) view);
+        Serial.println(errBuf);
+#endif
         if (view) {
             m_ring.pushBack(view);
         }
@@ -97,6 +107,11 @@ ViewIF * ViewManager::viewBuilder(toml_table_t * mod_cfg) {
         Serial.println("Module has no type.");
         return nullptr;
     }
+
+#ifdef VERBOSE
+    sprintf(errBuf, "Module type is %s.", type.u.s);
+    Serial.println(errBuf);
+#endif
 
     ViewIF * newView = nullptr;
     if (strcmp("comics", type.u.s) == 0) {
