@@ -91,7 +91,7 @@ void setup() {
 
     viewMan.init(display, cfg_general, cfg_modules);
 
-    display.println("Comics config OK.");
+    display.println("ViewManager initialized.");
     display.partialUpdate();
 
     //display.display();
