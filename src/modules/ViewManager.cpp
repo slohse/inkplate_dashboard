@@ -5,6 +5,7 @@
 #include <cstring>
 #include "ViewManager.h"
 #include "Comics.h"
+#include "Text.h"
 #include "../shared_consts.h"
 
 #define VERBOSE
@@ -128,6 +129,13 @@ ViewIF * ViewManager::viewBuilder(toml_table_t * mod_cfg) {
             newView = (ViewIF *) comics;
         } else {
             sprintf(errBuf, "Could not set up comics module.");
+        }
+    } else if (strcmp("text", type.u.s) == 0) {
+        Text * text = new Text();
+        if (text->setup(*m_display, mod_cfg)) {
+            newView = (ViewIF *) text;
+        } else {
+            sprintf(errBuf, "Could not set up text module.");
         }
     } else {
         sprintf(errBuf, "Unknown module type '%s'.", type.u.s);
