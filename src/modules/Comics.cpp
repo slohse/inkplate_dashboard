@@ -41,7 +41,8 @@ bool Comics::setup(Inkplate & display, toml_table_t * cfg) {
 
         std::string cached = get_last_viewed();
         if(cached != "") {
-            if(file_type(cached) == FileType::PNG) {
+            FileType type = file_type(cached);
+            if(type.isImage) {
                 sprintf(errBuf, "Found %s as last viewed", cached.c_str());
                 Serial.println(errBuf);
                 m_current = cached;
@@ -66,48 +67,9 @@ void Comics::resume() {
     int y_offset = 0;
     char errBuf[ERRBUFSIZE];
 
-    // centering the image
-    if(file_type(m_current.c_str()) == FileType::PNG) {
-        Serial.println("centering");
-        reset_png_header_flag();
-        pngle_t *pngle = pngle_new();
-        pngle_set_init_callback(pngle, c_png_header_callback);
+    FileType type = file_type(m_current);
 
-        FatFile file;
-        file.open(m_current.c_str(), O_RDONLY);
-
-        sprintf(errBuf, "Feeding %s into pngle", m_current.c_str());
-        Serial.println(errBuf);
-
-        uint8_t buf[16];
-        size_t bytes_read = file.read(buf, 16);
-        while(!png_header_is_read() && bytes_read) {
-            pngle_feed(pngle, buf, bytes_read);
-            bytes_read = file.read(buf, 16);
-        }
-
-        Serial.println("header read");
-        sprintf(errBuf, "width: %i, height: %i", pngle_get_width(pngle), pngle_get_height(pngle));
-        Serial.println(errBuf);
-
-        if(png_header_is_read()) {
-            int32_t x_margin = m_display->width() - pngle_get_width(pngle);
-            if(x_margin > 0) {
-                x_offset = x_margin / 2;
-            }
-            int32_t y_margin = m_display->height() - pngle_get_height(pngle);
-            if(y_margin > 0) {
-                y_offset = y_margin / 2;
-            }
-            sprintf(errBuf, "x_margin: %i, x_offset: %i, y_margin: %i, y_offset: %i",
-                    x_margin, x_offset, y_margin, y_offset);
-            Serial.println(errBuf);
-        }
-
-        pngle_destroy(pngle);
-    }
-
-    m_display->drawImage(m_current.c_str(), x_offset, y_offset, 0);
+    m_display->drawImage(m_current.c_str(), type.format, Image::Position::Center, true, false);
     m_display->display();
 }
 
@@ -123,10 +85,6 @@ void Comics::rightButton() {
     resume();
 }
 
-void Comics::png_header_callback() {
-    Serial.println("Comics::png_header_callback()");
-    m_png_header_read = true;
-}
 
 /************************************************
  * private
@@ -134,8 +92,6 @@ void Comics::png_header_callback() {
 
 const std::string Comics::CACHE_PATH = ".inkplate_comics.toml";
 const std::string Comics::LAST_VIEWED_KEY = "last_viewed";
-
-bool Comics::m_png_header_read = false;
 
 void Comics::set_current_image(std::string const & path) {
     m_current = path;
@@ -201,8 +157,8 @@ std::string Comics::get_next(std::string path, bool allow_ascend, bool reverse) 
 
             sprintf(errBuf, "Next file is %s", next_file.c_str());
             Serial.println(errBuf);
-            // for some reason neither BMP nor JPEG get rendered properly. The screen just stays blank
-            if(file_type(next_file) == FileType::PNG) {
+            FileType type = file_type(next_file);
+            if(type.isImage) {
                 return next_file;
             }
         } else {
@@ -251,14 +207,6 @@ std::list<Comics::dir_entry> Comics::dir_contents(FatFile & dir) {
     dirContents.sort(compare_dir_entry);
 
     return dirContents;
-}
-
-void Comics::reset_png_header_flag() {
-    m_png_header_read = false;
-}
-
-bool Comics::png_header_is_read() {
-    return m_png_header_read;
 }
 
 std::string Comics::get_last_viewed() {
@@ -317,20 +265,27 @@ Comics::FileType Comics::file_type(std::string filepath) {
 
     uint8_t header[8];
 
+    FileType t = {
+            .isImage = false,
+            .format = Image::Format::BMP
+    };
+
     if(file.read(header, 8) == 8) {
         if(header[0] == 0x42 && header[1] == 0x4d) {
-            return FileType::BMP;
+            t.isImage = true;
         }
         if(header[0] == 0xff && header[1] == 0xd8 && header[2] == 0xff) {
-            return FileType::JPEG;
+            t.isImage = true;
+            t.format = Image::Format::JPG;
         }
         if(header[0] == 0x89 && header[1] == 0x50 && header[2] == 0x4e && header[3] == 0x47
            && header[4] == 0x0d && header[5] == 0x0a && header[6] == 0x1a && header[7] == 0x0a) {
-            return FileType::PNG;
+            t.isImage = true;
+            t.format = Image::Format::PNG;
         }
     }
 
-    return FileType::NO_IMAGE;
+    return t;
 }
 
 bool Comics::compare_dir_entry(const dir_entry& first, const dir_entry& second) {
@@ -341,9 +296,4 @@ bool Comics::compare_dir_entry(const dir_entry& first, const dir_entry& second) 
         return false;
     }
     return first.name < second.name;
-}
-
-void c_png_header_callback(pngle_t *pngle, uint32_t w, uint32_t h) {
-    Serial.println("c_png_header_callback()");
-    Comics::png_header_callback();
 }

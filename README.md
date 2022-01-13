@@ -8,7 +8,7 @@ At the moment there is a view that lets you browse through images and another vi
 
 ## Image/Comics Viewer
 
-The comics module diplays PNG images. The left and right buttons allow you to traverse a folder structure in alphanumerical order. I wrote this to chronologically read through comic strips, but it can of course be used for any kinds of images.
+The comics module diplays BMP/JPG/PNG images. The left and right buttons allow you to traverse a folder structure in alphanumerical order. I wrote this to chronologically read through comic strips, but it can of course be used for any kinds of images.
 
 The viewer does not do any kind of on-the-fly resizing, you need to size the images to fit beforehand.
 
