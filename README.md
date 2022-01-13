@@ -2,7 +2,7 @@
 
 Turn your Inkplate into a viewer for comic strips and (motivational?) messages!
 
-Inkplate Dashboard lets you define multiple views that you can flip through using the middle touch button on the Inkplate 6 and Inkplate 10.
+Inkplate Dashboard lets you define multiple views that you can flip through using the middle touch button on your Inkplate.
 
 At the moment there is a view that lets you browse through images and another view that displays a user-defined text.
 
@@ -12,7 +12,7 @@ The comics module diplays PNG images. The left and right buttons allow you to tr
 
 The viewer does not do any kind of on-the-fly resizing, you need to size the images to fit beforehand.
 
-Something like this might do the trick:
+Something like this might do the trick (assuming your comics are in a `YEAR/MONTH/DAY.extension` folder structure):
 
 ```shell
 comics_root="/path/to/some/folder"
@@ -32,7 +32,7 @@ for year in $(ls -1 ${comics_root}/); do
 done
 ```
 
-(replace `800x600` with `1200x825` for Inkplate 10)
+(replace `800x600` with `1200x825` for Inkplate 10 or `1024x758` for Inkplate 6PLUS)
 
 ## Text Viewer
 
@@ -43,7 +43,7 @@ Optionally you can also configure the font size with the `size` parameter.
 
 ## Example Config
 
-The config file goes into the root folder of the SD card. It should be names `config.toml` and is a TOML file, as the name suggests. 
+The config file goes into the root folder of the SD card. It should be named `config.toml` and is a TOML file, as the name suggests. 
 
 ```toml
 [general]
@@ -55,3 +55,9 @@ modules = [
 ```
 
 
+## Issues and ideas for improvement
+
+* Image viewer: Rendering large images can take an amount of time that makes you wonder if the button press was registered. Some kind of quick visual indicator that the Inkplate is busy qould be nice.
+* a weather forecast module
+* a calendar module that get's the day's/week's tasks from CalDAV
+* make it usable on the Inkplate 6PLUS. It runs on the 6PLUS, but since there are no dedicated touch buttons, it is kind of pointless.
