@@ -8,6 +8,8 @@ At the moment there are two views: one that lets you browse through images from 
 
 You can have multiple instances of each module. What modules you want to have and what they should display is defined in a TOML file on the microSD card.
 
+![Picture of an Inkplate 10 showing a comic strip from Känguru Comics and below an Inkplate 6 showing a comic strip from Calvin & Hobbes](inkplate10_and_6.jpg "Comics!")
+
 
 ## Image/Comics Viewer
 
