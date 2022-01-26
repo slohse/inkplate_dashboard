@@ -61,6 +61,12 @@ modules = [
 ]
 ```
 
+So here we define the modules that we want to display.
+We have
+* a comics module that should display whatever is in the folder named `calvin` that resides in the root of the microSD
+* a text module that shows "Hello! You look great today!" in text size 12. The size parameter is optional.
+* another comics module that displays image files that can be found in the folder `kaenguru`
+
 
 ## Issues
 
