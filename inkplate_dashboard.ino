@@ -28,11 +28,11 @@ bool read_config() {
 }
 
 void setup() {
-    Serial.begin(921600);
+    Serial.begin(115200);
     while (!Serial) {
         ;
     }
-    Serial.println("Serial Monitor Initialized");
+    SERIAL_LOG("Serial Monitor Initialized");
 
     display.begin();
     display.clearDisplay(); // clear buffer
@@ -44,7 +44,7 @@ void setup() {
     display.setTextSize(2);
 
     display.println("booting...");
-    Serial.println("booting...");
+    SERIAL_LOG("booting...");
     display.partialUpdate();
 
     // Init SD card. Handle if SD card could not be accessed
@@ -105,15 +105,15 @@ void setup() {
 
 void loop() {
     if(display.readTouchpad(PAD1)) {
-        Serial.println("Left Button");
+        SERIAL_LOG("Left Button");
         viewMan.leftButton();
     }
     if(display.readTouchpad(PAD2)) {
-        Serial.println("Center Button");
+        SERIAL_LOG("Center Button");
         viewMan.centerButton();
     }
     if(display.readTouchpad(PAD3)) {
-        Serial.println("Right Button");
+        SERIAL_LOG("Right Button");
         viewMan.rightButton();
     }
 

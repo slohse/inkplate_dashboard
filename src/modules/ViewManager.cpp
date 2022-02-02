@@ -7,6 +7,7 @@
 #include "Comics.h"
 #include "Text.h"
 #include "../shared_consts.h"
+#include "../util.h"
 
 #define VERBOSE
 
@@ -28,29 +29,26 @@ void ViewManager::init(Inkplate & display, toml_table_t * cfg, toml_array_t * mo
 void ViewManager::leftButton() {
     ViewIF * curr = m_ring.getCurrent();
     if (!curr) {
-        Serial.println("ViewManager::leftButton> no current view");
+        SERIAL_LOG("ViewManager::leftButton> no current view");
         return;
     }
     curr->leftButton();
 }
 
 void ViewManager::centerButton() {
-    char errBuf[ERRBUFSIZE];
-
     ViewIF * curr = m_ring.getNext();
     if (!curr) {
-        Serial.println("ViewManager::centerButton> no current view");
+        SERIAL_LOG("ViewManager::centerButton> no current view");
         return;
     }
-    sprintf(errBuf, "Resuming %p.", (void *) curr);
-    Serial.println(errBuf);
+    SERIAL_LOG("Resuming %p.", (void *) curr);
     curr->resume();
 }
 
 void ViewManager::rightButton() {
     ViewIF * curr = m_ring.getCurrent();
     if (!curr) {
-        Serial.println("ViewManager::rightButton> no current view");
+        SERIAL_LOG("ViewManager::rightButton> no current view");
         return;
     }
     curr->rightButton();
@@ -59,7 +57,7 @@ void ViewManager::rightButton() {
 void ViewManager::draw() {
     ViewIF * curr = m_ring.getCurrent();
     if (!curr) {
-        Serial.println("ViewManager::draw> no current view");
+        SERIAL_LOG("ViewManager::draw> no current view");
         return;
     }
     curr->resume();
@@ -69,16 +67,14 @@ void ViewManager::draw() {
 // private
 
 void ViewManager::initModules(toml_table_t * cfg, toml_array_t * modules_cfg) {
-    char errBuf[ERRBUFSIZE];
-
     if (!cfg) {
-        Serial.println("No config found");
+        SERIAL_LOG("No config found");
         while(true) {
             // nop
         }
     }
     if (!modules_cfg) {
-        Serial.println("No modules found");
+        SERIAL_LOG("No modules found");
         while(true) {
             // nop
         }
@@ -86,21 +82,18 @@ void ViewManager::initModules(toml_table_t * cfg, toml_array_t * modules_cfg) {
 
     for (int i = 0; ; i++) {
 #ifdef VERBOSE
-        sprintf(errBuf, "Looking at module at index %i.", i);
-        Serial.println(errBuf);
+        SERIAL_LOG("Looking at module at index %i.", i);
 #endif
         toml_table_t * module = toml_table_at(modules_cfg, i);
         if (!module) break;
 
         ViewIF * view = viewBuilder(module);
 #ifdef VERBOSE
-        sprintf(errBuf, "New view at %p.", (void *) view);
-        Serial.println(errBuf);
+        SERIAL_LOG("New view at %p.", (void *) view);
 #endif
         if (view) {
 #ifdef VERBOSE
-            sprintf(errBuf, "Adding view %p to the ring.", (void *) view);
-            Serial.println(errBuf);
+            SERIAL_LOG("Adding view %p to the ring.", (void *) view);
 #endif
             m_ring.pushBack(view);
         }
@@ -109,17 +102,14 @@ void ViewManager::initModules(toml_table_t * cfg, toml_array_t * modules_cfg) {
 
 
 ViewIF * ViewManager::viewBuilder(toml_table_t * mod_cfg) {
-    char errBuf[ERRBUFSIZE];
-
     toml_datum_t type = toml_string_in(mod_cfg, "module");
     if (!type.ok) {
-        Serial.println("Module has no type.");
+        SERIAL_LOG("Module has no type.");
         return nullptr;
     }
 
 #ifdef VERBOSE
-    sprintf(errBuf, "Module type is %s.", type.u.s);
-    Serial.println(errBuf);
+    SERIAL_LOG("Module type is %s.", type.u.s);
 #endif
 
     ViewIF * newView = nullptr;
@@ -128,18 +118,17 @@ ViewIF * ViewManager::viewBuilder(toml_table_t * mod_cfg) {
         if (comics->setup(*m_display, mod_cfg)) {
             newView = (ViewIF *) comics;
         } else {
-            sprintf(errBuf, "Could not set up comics module.");
+            SERIAL_LOG("Could not set up comics module.");
         }
     } else if (strcmp("text", type.u.s) == 0) {
         Text * text = new Text();
         if (text->setup(*m_display, mod_cfg)) {
             newView = (ViewIF *) text;
         } else {
-            sprintf(errBuf, "Could not set up text module.");
+            SERIAL_LOG("Could not set up text module.");
         }
     } else {
-        sprintf(errBuf, "Unknown module type '%s'.", type.u.s);
-        Serial.println(errBuf);
+        SERIAL_LOG("Unknown module type '%s'.", type.u.s);
     }
 
     free(type.u.s);

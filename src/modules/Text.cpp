@@ -3,6 +3,7 @@
 //
 
 #include "Text.h"
+#include "../util.h"
 
 Text::Text() : m_text(""), m_fontsize(8) {
 
@@ -17,7 +18,7 @@ bool Text::setup(Inkplate & display, toml_table_t * cfg) {
 
     toml_datum_t cfg_text = toml_string_in(cfg, "text");
     if(!cfg_text.ok) {
-        Serial.println("No 'text' configured for text.");
+        SERIAL_LOG("No 'text' configured for text.");
         return false;
     }
     m_text = cfg_text.u.s;
@@ -33,7 +34,7 @@ bool Text::setup(Inkplate & display, toml_table_t * cfg) {
 }
 
 void Text::resume() {
-    Serial.println("Comics::resume()");
+    SERIAL_LOG("Comics::resume()");
     m_display->selectDisplayMode(INKPLATE_1BIT);
     m_display->clearDisplay();
 
