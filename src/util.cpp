@@ -7,13 +7,14 @@
 #include <SdFat.h>
 #include "shared_consts.h"
 
+const int LOGBUFSIZE = 120;
+char logBuf[LOGBUFSIZE];
+
 toml_table_t* parse_toml_from_sd(std::string const & path) {
     FatFile file;
-    char errBuf[ERRBUFSIZE];
 
     if (!file.open(path.c_str())) {
-        sprintf(errBuf, "Could not open %s", path.c_str());
-        Serial.println(errBuf);
+        SERIAL_LOG("Could not open %s", path.c_str());
         return nullptr;
     }
 
@@ -21,21 +22,21 @@ toml_table_t* parse_toml_from_sd(std::string const & path) {
     file_buf[file.fileSize()] = '\0';
 
     if(!file_buf) {
-        Serial.println("Failed to allocate memory for config.");
+        SERIAL_LOG("Failed to allocate memory for config.");
         return nullptr;
     }
 
     int16_t bytes_read = file.read(file_buf, file.fileSize());
 
     if(bytes_read <= 0) {
-        Serial.println("Failed to read config.");
+        SERIAL_LOG("Failed to read config.");
         return nullptr;
     }
 
-    toml_table_t* table = toml_parse(file_buf, errBuf, ERRBUFSIZE);
+    toml_table_t* table = toml_parse(file_buf, logBuf, LOGBUFSIZE);
 
     if(!table) {
-        Serial.println("Failed to parse config.");
+        SERIAL_LOG("Failed to parse config.");
         return nullptr;
     }
 

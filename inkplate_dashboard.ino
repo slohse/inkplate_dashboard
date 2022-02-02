@@ -4,24 +4,23 @@
 #include <vector>
 
 #include "src/util.h"
+#include "src/Config.h"
 #include "src/lib/toml.h"
 #include "src/shared_consts.h"
-#include "src/modules/Comics.h"
+#include "src/modules/ViewManager.h"
 
 Inkplate display(INKPLATE_1BIT);
 SdFile config;
-Comics cmx;
+ViewManager viewMan;
 
-toml_table_t * cfg;
+Config cfg;
 
 bool read_config() {
     char errbuf[ERRBUFSIZE];
 
     std::string config_path("/config.toml");
 
-    cfg = parse_toml_from_sd(config_path);
-
-    if(!cfg) {
+    if(cfg.init(config_path) != Config::Error::SUCCESS) {
         return false;
     }
 
@@ -29,15 +28,15 @@ bool read_config() {
 }
 
 void setup() {
-    Serial.begin(921600);
+    Serial.begin(115200);
     while (!Serial) {
         ;
     }
-    Serial.println("Serial Monitor Initialized");
+    SERIAL_LOG("Serial Monitor Initialized");
 
     display.begin();
     display.clearDisplay(); // clear buffer
-    display.clean(); // clear screen
+    //display.clean(0, 1); // clear screen
     display.display();
 
     //display.setTextColor(0,7);
@@ -45,7 +44,7 @@ void setup() {
     display.setTextSize(2);
 
     display.println("booting...");
-    Serial.println("booting...");
+    SERIAL_LOG("booting...");
     display.partialUpdate();
 
     // Init SD card. Handle if SD card could not be accessed
@@ -72,37 +71,50 @@ void setup() {
     display.println("Config OK.");
     display.partialUpdate();
 
-    if(!cmx.setup(display, cfg)) {
-        display.println("open_comics_dir failed.");
+    toml_table_t * cfg_general = nullptr;
+    toml_array_t * cfg_modules = nullptr;
+    if (Config::Error::SUCCESS != cfg.get_general(&cfg_general)) {
+        display.println("Config has no 'general' section.");
         display.partialUpdate();
         while(true) {
             // nop
         }
     }
 
-    display.println("Comics config OK.");
+    if (Config::Error::SUCCESS != cfg.get_modules(&cfg_modules)) {
+        display.println("Config's 'general' section has no 'modules'.");
+        display.partialUpdate();
+        while(true) {
+            // nop
+        }
+    }
+
+    viewMan.init(display, cfg_general, cfg_modules);
+
+    display.println("ViewManager initialized.");
     display.partialUpdate();
 
     //display.display();
 
     delay(1000);
 
-    cmx.resume();
+    viewMan.draw();
 
 
 }
 
 void loop() {
     if(display.readTouchpad(PAD1)) {
-        Serial.println("Left Button");
-        cmx.leftButton();
+        SERIAL_LOG("Left Button");
+        viewMan.leftButton();
     }
     if(display.readTouchpad(PAD2)) {
-        Serial.println("Center Button");
+        SERIAL_LOG("Center Button");
+        viewMan.centerButton();
     }
     if(display.readTouchpad(PAD3)) {
-        Serial.println("Right Button");
-        cmx.rightButton();
+        SERIAL_LOG("Right Button");
+        viewMan.rightButton();
     }
 
     delay(100);

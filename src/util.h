@@ -18,4 +18,8 @@
  */
 toml_table_t* parse_toml_from_sd(std::string const & path);
 
+extern char logBuf[];
+
+#define SERIAL_LOG(...) sprintf(logBuf, __VA_ARGS__); Serial.println(logBuf);
+
 #endif //COMICS_UTIL_H
