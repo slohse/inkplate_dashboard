@@ -9,8 +9,6 @@
 #include "../shared_consts.h"
 #include "../util.h"
 
-#define VERBOSE
-
 ViewManager::ViewManager() : m_ring(), m_display(nullptr) {
 
 }
@@ -81,20 +79,11 @@ void ViewManager::initModules(toml_table_t * cfg, toml_array_t * modules_cfg) {
     }
 
     for (int i = 0; ; i++) {
-#ifdef VERBOSE
-        SERIAL_LOG("Looking at module at index %i.", i);
-#endif
         toml_table_t * module = toml_table_at(modules_cfg, i);
         if (!module) break;
 
         ViewIF * view = viewBuilder(module);
-#ifdef VERBOSE
-        SERIAL_LOG("New view at %p.", (void *) view);
-#endif
         if (view) {
-#ifdef VERBOSE
-            SERIAL_LOG("Adding view %p to the ring.", (void *) view);
-#endif
             m_ring.pushBack(view);
         }
     }
@@ -107,10 +96,6 @@ ViewIF * ViewManager::viewBuilder(toml_table_t * mod_cfg) {
         SERIAL_LOG("Module has no type.");
         return nullptr;
     }
-
-#ifdef VERBOSE
-    SERIAL_LOG("Module type is %s.", type.u.s);
-#endif
 
     ViewIF * newView = nullptr;
     if (strcmp("comics", type.u.s) == 0) {
