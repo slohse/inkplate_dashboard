@@ -68,6 +68,13 @@ We have
 * another comics module that displays image files that can be found in the folder `kaenguru`
 
 
+## Building
+
+You should(™) be able to open this project in Arduino and compile it, as long as you have the Inkplate board definitions and e-radionica's Arduino library installed (see e-radionica's [Get Started instructions](https://inkplate.readthedocs.io/en/latest/get-started.html)).
+
+Known working setup (i.e. what I use): Arduino 1.8.19, Inkplate Board definition 1.0.1, Inkplate Arduino Library 5.5.1
+
+
 ## Issues
 
 * Image viewer: JPEGs don't work reliably, sometimes you get just an empty screen. Which is a shame, because when they work, they tend to display faster (see next point) than the same image as a PNG.
