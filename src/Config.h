@@ -13,8 +13,7 @@ public:
     enum class Error {
         SUCCESS,
         E_NO_CFG,
-        E_NO_GENERAL_SECTION,
-        E_NO_MODULES
+        E_NOT_FOUND
     };
 
     Config();
@@ -23,6 +22,8 @@ public:
     Error init(std::string const & cfg_path);
     Error get_general(toml_table_t ** general);
     Error get_modules(toml_array_t ** modules);
+
+
 
 private:
     toml_table_t * m_cfg;

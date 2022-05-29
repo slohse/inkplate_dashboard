@@ -28,7 +28,7 @@ Config::Error Config::init(std::string const & cfg_path) {
 
 Config::Error Config::get_general(toml_table_t ** general) {
     if(!m_cfg_general) {
-        return Error::E_NO_GENERAL_SECTION;
+        return Error::E_NOT_FOUND;
     }
 
     *general = m_cfg_general;
@@ -38,7 +38,7 @@ Config::Error Config::get_general(toml_table_t ** general) {
 
 Config::Error Config::get_modules(toml_array_t ** modules) {
     if(!m_cfg_modules) {
-        return Error::E_NO_MODULES;
+        return Error::E_NOT_FOUND;
     }
 
     *modules = m_cfg_modules;
