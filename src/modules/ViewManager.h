@@ -16,7 +16,7 @@ public:
     ViewManager();
     virtual ~ViewManager();
 
-    void init(Inkplate & display, toml_table_t * cfg, toml_array_t * modules_cfg);
+    void init(Inkplate & display, toml_array_t * modules_cfg);
 
     void leftButton();
     void centerButton();
@@ -28,8 +28,8 @@ private:
     ViewRing m_ring;
     Inkplate * m_display;
 
-    void initModules(toml_table_t * cfg, toml_array_t * modules_cfg);
-    ViewIF * viewBuilder(toml_table_t * cfg);
+    void initModules(toml_array_t * modules_cfg);
+    ViewIF * viewBuilder(toml_table_t * mod_cfg);
 };
 
 

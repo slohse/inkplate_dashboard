@@ -89,7 +89,7 @@ void setup() {
         }
     }
 
-    viewMan.init(display, cfg_general, cfg_modules);
+    viewMan.init(display, cfg_modules);
 
     display.println("ViewManager initialized.");
     display.partialUpdate();

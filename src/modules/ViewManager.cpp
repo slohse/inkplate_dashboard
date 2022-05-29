@@ -18,10 +18,10 @@ ViewManager::~ViewManager() {
 }
 
 
-void ViewManager::init(Inkplate & display, toml_table_t * cfg, toml_array_t * modules_cfg) {
+void ViewManager::init(Inkplate & display, toml_array_t * modules_cfg) {
     m_display = &display;
 
-    initModules(cfg, modules_cfg);
+    initModules(modules_cfg);
 }
 
 void ViewManager::leftButton() {
@@ -64,13 +64,7 @@ void ViewManager::draw() {
 
 // private
 
-void ViewManager::initModules(toml_table_t * cfg, toml_array_t * modules_cfg) {
-    if (!cfg) {
-        SERIAL_LOG("No config found");
-        while(true) {
-            // nop
-        }
-    }
+void ViewManager::initModules(toml_array_t * modules_cfg) {
     if (!modules_cfg) {
         SERIAL_LOG("No modules found");
         while(true) {
