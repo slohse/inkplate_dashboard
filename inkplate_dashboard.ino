@@ -15,6 +15,8 @@ ViewManager viewMan;
 
 Config cfg;
 
+const unsigned long WIFI_CONNECT_TIMEOUT_MS = 30000;
+
 bool read_config() {
     char errbuf[ERRBUFSIZE];
 
@@ -86,6 +88,33 @@ void setup() {
         display.partialUpdate();
         while(true) {
             // nop
+        }
+    }
+
+    std::string wifi_ssid;
+    std::string wifi_password;
+    if (Config::Error::SUCCESS != cfg.get_wifi_ssid(wifi_ssid)
+        || Config::Error::SUCCESS != cfg.get_wifi_password(wifi_password)) {
+        display.println("No WiFi config, skipping connecting to WiFi.");
+        display.partialUpdate();
+    } else {
+        unsigned long wifi_connect_start_time = millis();
+        while(!display.joinAP(wifi_ssid.c_str(), wifi_password.c_str()))
+        {
+            Serial.println("Connecting to WiFi...");
+            if(millis() - wifi_connect_start_time > WIFI_CONNECT_TIMEOUT_MS) {
+                Serial.println("WiFi connect timeout reached, aborting...");
+                break;
+            }
+        }
+        delay(1000);
+        if(display.isConnected())
+        {
+            Serial.println("Connected to WiFi.");
+            display.println("Connected to WiFi.");
+        } else {
+            Serial.println("Could not connect to WiFi.");
+            display.println("Could not connect to WiFi.");
         }
     }
 

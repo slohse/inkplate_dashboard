@@ -46,3 +46,36 @@ Config::Error Config::get_modules(toml_array_t ** modules) {
     return Error::SUCCESS;
 }
 
+Config::Error Config::get_wifi_ssid(std::string & ssid) {
+    if(!m_cfg_general) {
+        return Error::E_NOT_FOUND;
+    }
+
+    toml_datum_t toml_ssid = toml_string_in(m_cfg_general, "wifi_ssid");
+
+    if(!toml_ssid.ok) {
+        SERIAL_LOG("No 'wifi_ssid' configured.");
+        return Error::E_NOT_FOUND;
+    }
+    ssid = toml_ssid.u.s;
+
+    free(toml_ssid.u.s);
+    return Error::SUCCESS;
+}
+
+Config::Error Config::get_wifi_password(std::string & password) {
+    if(!m_cfg_general) {
+        return Error::E_NOT_FOUND;
+    }
+
+    toml_datum_t toml_password = toml_string_in(m_cfg_general, "wifi_password");
+
+    if(!toml_password.ok) {
+        SERIAL_LOG("No 'wifi_password' configured.");
+        return Error::E_NOT_FOUND;
+    }
+    password = toml_password.u.s;
+
+    free(toml_password.u.s);
+    return Error::SUCCESS;
+}

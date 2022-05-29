@@ -5,6 +5,7 @@
 #ifndef COMICS_UTIL_H
 #define COMICS_UTIL_H
 
+#include <Inkplate.h>
 #include <string>
 #include "lib/toml.h"
 

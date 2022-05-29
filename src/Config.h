@@ -22,8 +22,8 @@ public:
     Error init(std::string const & cfg_path);
     Error get_general(toml_table_t ** general);
     Error get_modules(toml_array_t ** modules);
-
-
+    Error get_wifi_ssid(std::string & ssid);
+    Error get_wifi_password(std::string & password);
 
 private:
     toml_table_t * m_cfg;
