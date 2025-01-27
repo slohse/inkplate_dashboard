@@ -24,6 +24,8 @@ private:
     Inkplate * m_display;
     std::string m_text;
     int64_t m_fontsize;
+    int16_t m_cursor_x;
+    int16_t m_cursor_y;
 };
 
 
