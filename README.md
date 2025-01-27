@@ -91,5 +91,5 @@ Known working setup (i.e. what I use): Arduino 2.3.4, Inkplate Board definition 
 ## Thanks
 
 I would like to thank:
-* e-radionica for making the Inkplate.
+* e-radionica/Soldered for making the Inkplate.
 * CK Tan for [tomlc99](https://github.com/cktan/tomlc99)
