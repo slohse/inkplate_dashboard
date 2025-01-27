@@ -72,7 +72,7 @@ We have
 
 You should(™) be able to open this project in Arduino and compile it, as long as you have the Inkplate board definitions and e-radionica's Arduino library installed (see e-radionica's [Get Started instructions](https://inkplate.readthedocs.io/en/latest/get-started.html)).
 
-Known working setup (i.e. what I use): Arduino 1.8.19, Inkplate Board definition 1.0.1, Inkplate Arduino Library 5.5.1
+Known working setup (i.e. what I use): Arduino 2.3.4, Inkplate Board definition 8.1.0, Inkplate Arduino Library 10.0.0
 
 
 ## Issues

@@ -99,7 +99,7 @@ void setup() {
         display.partialUpdate();
     } else {
         unsigned long wifi_connect_start_time = millis();
-        while(!display.joinAP(wifi_ssid.c_str(), wifi_password.c_str()))
+        while(!display.connectWiFi(wifi_ssid.c_str(), wifi_password.c_str()))
         {
             Serial.println("Connecting to WiFi...");
             if(millis() - wifi_connect_start_time > WIFI_CONNECT_TIMEOUT_MS) {
